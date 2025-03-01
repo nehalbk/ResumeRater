@@ -244,7 +244,9 @@ class ResumeSkillMatcherApp:
                         "Missing Skills": ", ".join(result["missing_skills"])
                     })
                 
-                df = pd.DataFrame(results_data).sort_values(by="Score (%)",ascending=False)
+                df = pd.DataFrame(results_data)
+                df["Score (%)"] = df["Score (%)"].astype("float16")
+                df=df.sort_values(by="Score (%)",ascending=False)
                 df.to_csv(file_path, index=False)
                 messagebox.showinfo("Success", f"Results exported to {file_path}")
             
