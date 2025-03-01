@@ -161,12 +161,17 @@ class ResumeSkillMatcherApp:
                 # Extract text based on file type
                 resume_text = extract_text_from_file(resume_path)
                 
-                # Match skills
-                matched_skills = match_skills(resume_text, skill_list)
-                
-                # Calculate score
-                matched, missing, score = calculate_score(weighted_skills, matched_skills)
-                
+                if(resume_text):
+                    # Match skills
+                    matched_skills,similarity_threshold = match_skills(resume_text, skill_list)
+                    
+                    # Calculate score
+                    matched, missing, score = calculate_score(weighted_skills, matched_skills,similarity_threshold,max_threshold=0.75)
+                else:
+                    score=0.0
+                    matched=['Unable to process resume.']
+                    missing=['Unable to process resume.']
+
                 # Add to results
                 self.results.append({
                     "file_name": file_name,
@@ -239,7 +244,7 @@ class ResumeSkillMatcherApp:
                         "Missing Skills": ", ".join(result["missing_skills"])
                     })
                 
-                df = pd.DataFrame(results_data)
+                df = pd.DataFrame(results_data).sort_values(by="Score (%)",ascending=False)
                 df.to_csv(file_path, index=False)
                 messagebox.showinfo("Success", f"Results exported to {file_path}")
             

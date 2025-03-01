@@ -21,6 +21,26 @@ except Exception as e:
     MODELS_LOADED = False
     raise
 
+def calculate_clarity_score(resume_text, skill_list):
+    """
+    Determines how 'clear' a resume is based on the number of exact skill matches.
+    """
+    exact_matches = sum(1 for skill in skill_list if skill.lower() in resume_text.lower())
+    total_skills = len(skill_list)
+    
+    return exact_matches / total_skills if total_skills > 0 else 0
+
+def determine_threshold(clarity_score):
+    """
+    Adjusts similarity threshold based on resume clarity.
+    """
+    if clarity_score >= 0.75:
+        return 0.75  # Clear resumes → strict threshold
+    elif clarity_score >= 0.5:
+        return 0.675  # Semi-clear resumes → medium threshold
+    else:
+        return 0.625  # Vague resumes → lower threshold
+
 def tokenize_resume(text):
     """
     Tokenizes resume text into meaningful phrases for better skill matching.
@@ -44,7 +64,7 @@ def tokenize_resume(text):
     tokens = phrases.union(keywords)
     return list(tokens)
 
-def match_skills(resume_text, skill_list, similarity_threshold=0.75):
+def match_skills(resume_text, skill_list):
     """
     Matches resume skills using embeddings for better accuracy and exact matches.
     
@@ -60,6 +80,10 @@ def match_skills(resume_text, skill_list, similarity_threshold=0.75):
         logger.error("NLP models not loaded. Cannot match skills.")
         return []
     
+    clarity_score = calculate_clarity_score(resume_text, skill_list)
+    similarity_threshold = determine_threshold(clarity_score)
+
+
     resume_tokens = tokenize_resume(resume_text)
     logger.info(f"Tokenized resume into {len(resume_tokens)} tokens")
 
@@ -89,4 +113,4 @@ def match_skills(resume_text, skill_list, similarity_threshold=0.75):
     
     logger.info(f"Found {semantic_matches} semantic skill matches")
     
-    return sorted(matched_skills)
+    return sorted(matched_skills),similarity_threshold

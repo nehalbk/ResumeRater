@@ -6,7 +6,7 @@ import logging
 
 logger = logging.getLogger('resume_matcher.core.scorer')
 
-def calculate_score(weighted_skills, matched_skills):
+def calculate_score(weighted_skills, matched_skills,similarity_threshold,max_threshold):
     """
     Calculate score based on weighted skills
     
@@ -36,8 +36,9 @@ def calculate_score(weighted_skills, matched_skills):
             acquired_skill_points += int(skill_weight)
         
         # Calculate percentage score
+        print(acquired_skill_points,total_skill_points,similarity_threshold,max_threshold)
         if total_skill_points > 0:
-            resume_score = acquired_skill_points * 100 / total_skill_points
+            resume_score = acquired_skill_points * similarity_threshold *100 / (max_threshold*total_skill_points)
         else:
             resume_score = 0
             logger.warning("Total skill points is zero, cannot calculate percentage")
